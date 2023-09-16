@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,13 +10,25 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+
+	"github.com/go-kit/kit/endpoint"
+	httptransport "github.com/go-kit/kit/transport/http"
 )
 
 func main() {
 	log.Println("Initializing service")
 
+	//var gfSvc GearForceService
+	gfSvc := gearForceService{}
+
+	gfStoreHandler := httptransport.NewServer(
+		makeUppercaseEndpoint(gfSvc),
+		decodeUppercaseRequest,
+		encodeResponse,
+	)
+
 	r := mux.NewRouter()
-	r.HandleFunc("/", helloHandler).Methods("POST")
+	r.Handle("/", gfStoreHandler).Methods("POST")
 	r.HandleFunc("/healthz", healthHandler).Methods("POST")
 
 	http.Handle("/", r)
@@ -67,29 +78,46 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type shortenRequest struct {
-	URL string `json:"url"`
+	Data string `json:"data"`
 }
 
 type shortenResponse struct {
-	Shortened string `json:"short_url_code"`
-	URL       string `json:"url"`
+	V   string `json:"short_url_code"`
+	Err string `json:"err,omitempty"`
 }
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	var sr shortenRequest
-	if err := decoder.Decode(&sr); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Bad request: body does not contain url"))
+type GearForceService interface {
+	Store(s string) (string, error)
+}
+
+type gearForceService struct{}
+
+func (gearForceService) Store(s string) (string, error) {
+
+	return "", nil
+}
+
+type ServiceMiddleware func(GearForceService) GearForceService
+
+func makeUppercaseEndpoint(svc GearForceService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(shortenRequest)
+		v, err := svc.Store(req.Data)
+		if err != nil {
+			return shortenResponse{v, err.Error()}, nil
+		}
+		return shortenResponse{v, ""}, nil
 	}
-
-	key := createKey()
-
-	resp := shortenResponse{Shortened: fmt.Sprintf("/%s", key), URL: sr.URL}
-	json.NewEncoder(w).Encode(resp)
 }
 
-func createKey() string {
+func decodeUppercaseRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request shortenRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+	return request, nil
+}
 
-	return "a"
+func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+	return json.NewEncoder(w).Encode(response)
 }
