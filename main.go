@@ -2,33 +2,23 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/Ariemeth/gearforce_storage/gearforce"
 	"github.com/gorilla/mux"
-
-	"github.com/go-kit/kit/endpoint"
-	httptransport "github.com/go-kit/kit/transport/http"
 )
 
 func main() {
 	log.Println("Initializing service")
 
-	//var gfSvc GearForceService
-	gfSvc := gearForceService{}
-
-	gfStoreHandler := httptransport.NewServer(
-		makeUppercaseEndpoint(gfSvc),
-		decodeUppercaseRequest,
-		encodeResponse,
-	)
-
 	r := mux.NewRouter()
-	r.Handle("/", gfStoreHandler).Methods("POST")
+
+	gearforce.ConfigureRouteHandler(r.NewRoute().Subrouter(), "/gf")
+
 	r.HandleFunc("/healthz", healthHandler).Methods("POST")
 
 	http.Handle("/", r)
@@ -75,49 +65,4 @@ func main() {
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("healthy and running"))
-}
-
-type shortenRequest struct {
-	Data string `json:"data"`
-}
-
-type shortenResponse struct {
-	V   string `json:"short_url_code"`
-	Err string `json:"err,omitempty"`
-}
-
-type GearForceService interface {
-	Store(s string) (string, error)
-}
-
-type gearForceService struct{}
-
-func (gearForceService) Store(s string) (string, error) {
-
-	return "", nil
-}
-
-type ServiceMiddleware func(GearForceService) GearForceService
-
-func makeUppercaseEndpoint(svc GearForceService) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(shortenRequest)
-		v, err := svc.Store(req.Data)
-		if err != nil {
-			return shortenResponse{v, err.Error()}, nil
-		}
-		return shortenResponse{v, ""}, nil
-	}
-}
-
-func decodeUppercaseRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request shortenRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
-	}
-	return request, nil
-}
-
-func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	return json.NewEncoder(w).Encode(response)
 }
