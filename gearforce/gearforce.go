@@ -15,8 +15,8 @@ func ConfigureRouteHandler(r *mux.Router, root string) {
 
 	gfStoreHandler := endpoints.MakeHelloHTTPEndpointHandler(svc)
 
-	r.Handle(root, gfStoreHandler).Methods("POST")
-	r.Handle(fmt.Sprintf("%s/", root), gfStoreHandler).Methods("POST")
+	r.Handle(fmt.Sprintf("%s/hello", root), gfStoreHandler).Methods("POST")
+	r.Handle(fmt.Sprintf("%s/hello/", root), gfStoreHandler).Methods("POST")
 }
 
 func (gearForceService) Hello(s string) (string, error) {
