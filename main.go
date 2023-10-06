@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/Ariemeth/gearforce_storage/gearforce"
+	"github.com/Ariemeth/gearforce_storage/internal/gearforce"
 	"github.com/gorilla/mux"
 )
 
