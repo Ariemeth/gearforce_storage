@@ -5,22 +5,23 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Ariemeth/gearforce_storage/gearforce/service"
+	"github.com/Ariemeth/gearforce_storage/internal/gearforce/service"
+
 	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
-func MakeHelloHTTPEndpointHandler(svc service.GearForceService) *httptransport.Server {
+func MakeHelloHTTPEndpointHandler(svc service.Hello) *httptransport.Server {
 	handler := httptransport.NewServer(
 		makeHelloEndpoint(svc),
 		decodeHelloRequest,
-		encodeResponse,
+		defaultEncodeResponse,
 	)
 
 	return handler
 }
 
-func makeHelloEndpoint(svc service.GearForceService) endpoint.Endpoint {
+func makeHelloEndpoint(svc service.Hello) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(helloRequest)
 		v, err := svc.Hello(req.Data)
@@ -37,10 +38,6 @@ func decodeHelloRequest(_ context.Context, r *http.Request) (interface{}, error)
 		return nil, err
 	}
 	return request, nil
-}
-
-func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	return json.NewEncoder(w).Encode(response)
 }
 
 type helloRequest struct {
