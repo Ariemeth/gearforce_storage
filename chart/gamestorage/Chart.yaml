@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gamestorage
+description: A helm chart to install gearforce storage
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
