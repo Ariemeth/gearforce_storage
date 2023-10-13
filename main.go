@@ -19,7 +19,7 @@ func main() {
 
 	gearforce.ConfigureRouteHandler(r.NewRoute().Subrouter(), "/gf")
 
-	r.HandleFunc("/healthz", healthHandler).Methods("POST")
+	r.HandleFunc("/healthz", healthHandler).Methods("GET")
 
 	http.Handle("/", r)
 
