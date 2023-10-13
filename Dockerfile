@@ -64,3 +64,5 @@ EXPOSE 9000
 
 # What the container should run when it is started.
 ENTRYPOINT [ "/bin/server" ]
+
+FROM release
