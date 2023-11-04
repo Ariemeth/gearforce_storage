@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/Ariemeth/gearforce_storage/internal/config"
 	"github.com/Ariemeth/gearforce_storage/internal/gearforce"
 	"github.com/gorilla/mux"
 )
@@ -15,17 +17,25 @@ import (
 func main() {
 	log.Println("Initializing service")
 
+	log.Println("Loading environment variables")
+	c, err := config.LoadEnvConfig()
+	if err != nil {
+		log.Fatalf("Error: unable to load config: %v", err)
+	}
+
+	log.Println("Creating router")
 	r := mux.NewRouter()
 
-	gearforce.ConfigureRouteHandler(r.NewRoute().Subrouter(), "/gf")
+	gearforce.ConfigureRouteHandler(r.NewRoute().Subrouter(), "/gf", c.Database)
 
 	r.HandleFunc("/healthz", healthHandler).Methods("GET")
 
 	http.Handle("/", r)
 
+	log.Println("Starting web server")
 	srv := &http.Server{
 		Handler:      r,
-		Addr:         ":9000",
+		Addr:         fmt.Sprintf(":%s", c.System.Port),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
