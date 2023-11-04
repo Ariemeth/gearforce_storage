@@ -1,9 +1,11 @@
 package models
 
 type Mod struct {
-	ID       string `json:"id"`
-	Selected *struct {
-		Text     string `json:"text,omitempty"`
-		Selected any    `json:"selected,omitempty"`
-	} `json:"selected,omitempty"`
+	ID       string    `json:"id"`
+	Selected *Selected `json:"selected,omitempty"`
+}
+
+type Selected struct {
+	Text     string    `json:"text,omitempty"`
+	Selected *Selected `json:"selected"`
 }
