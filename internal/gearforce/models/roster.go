@@ -40,10 +40,10 @@ type Roster struct {
 }
 
 func (r Roster) ToRosterStorage(key string) RosterStorage {
-	return RosterStorage{Roster: r, Key: key}
+	return RosterStorage{RosterBase: r.RosterBase, Key: key}
 }
 
 type RosterStorage struct {
 	Key string `json:"_key"`
-	Roster
+	RosterBase
 }
