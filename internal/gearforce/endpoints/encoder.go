@@ -40,6 +40,8 @@ func ErrorStatusCode(err error) int {
 		statusCode = http.StatusBadRequest
 	case errors.ErrIdNotFound:
 		statusCode = http.StatusNotFound
+	case errors.ErrFromDatabase:
+		fallthrough
 	default:
 		statusCode = http.StatusInternalServerError
 	}

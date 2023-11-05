@@ -30,3 +30,12 @@ type Roster struct {
 	IsEliteForce bool   `json:"isEliteForce"`
 	WhenCreated  string `json:"whenCreated"`
 }
+
+func (r Roster) ToRosterStorage(key string) RosterStorage {
+	return RosterStorage{Roster: r, Key: key}
+}
+
+type RosterStorage struct {
+	Key string `json:"_key"`
+	Roster
+}
