@@ -139,6 +139,15 @@ func (g *gearForceService) SaveRoster(r models.Roster) (uuid.UUID, error) {
 
 	sr := r.ToRosterStorage(key.String())
 
+	exists, err := g.Collection.DocumentExists(context.Background(), key.String())
+	if err != nil {
+		log.Printf("Error checking of roster id %s already exists: %v", key.String(), err)
+		return uuid.Nil, errors.ErrFromDatabase
+	}
+	if exists {
+		return key, nil
+	}
+
 	meta, err := g.Collection.CreateDocument(context.Background(), sr)
 	if err != nil {
 		log.Printf("Error creating doc in database: %v", err)
@@ -169,11 +178,11 @@ func (g *gearForceService) GetRoster(id uuid.UUID) (models.Roster, error) {
 		return models.Roster{}, errors.ErrFromDatabase
 	}
 
-	return result.Roster, nil
+	return models.Roster{RosterBase: result.RosterBase}, nil
 }
 
 func generateID(r models.Roster) (uuid.UUID, error) {
-	u, err := json.Marshal(r)
+	u, err := json.Marshal(r.RosterBase)
 	if err != nil {
 		return uuid.New(), err
 	}
