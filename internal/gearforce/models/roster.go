@@ -1,8 +1,6 @@
 package models
 
-type Roster struct {
-	Player     string `json:"player"`
-	Name       string `json:"name"`
+type RosterBase struct {
 	Faction    string `json:"faction"`
 	Subfaction struct {
 		Name         string `json:"name"`
@@ -28,7 +26,17 @@ type Roster struct {
 	Version      int    `json:"version"`
 	RulesVersion string `json:"rulesVersion"`
 	IsEliteForce bool   `json:"isEliteForce"`
-	WhenCreated  string `json:"whenCreated"`
+}
+
+type RosterMetadata struct {
+	Player      string `json:"player"`
+	Name        string `json:"name"`
+	WhenCreated string `json:"whenCreated"`
+}
+
+type Roster struct {
+	RosterBase
+	RosterMetadata
 }
 
 func (r Roster) ToRosterStorage(key string) RosterStorage {
