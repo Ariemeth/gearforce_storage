@@ -67,7 +67,7 @@ func newGearForceService(dbConfig config.Database) GearForceService {
 		Endpoints: []string{dbConfig.Address},
 	})
 	if err != nil {
-		log.Fatalf("Error connecting to database %s: %v", dbConfig.Address, err)
+		log.Fatalf("Error connecting to database %s: %s", dbConfig.Address, err.Error())
 		return nil
 	}
 
@@ -76,7 +76,7 @@ func newGearForceService(dbConfig config.Database) GearForceService {
 		Authentication: driver.BasicAuthentication(dbConfig.User, dbConfig.Password),
 	})
 	if err != nil {
-		log.Fatalf("Error creating client for database: %v", err)
+		log.Fatalf("Error creating client for database: %s", err.Error())
 		return nil
 	}
 
