@@ -1,6 +1,7 @@
 package models
 
 type RosterBase struct {
+	Name       string `json:"name"`
 	Faction    string `json:"faction"`
 	Subfaction struct {
 		Name         string `json:"name"`
@@ -30,7 +31,6 @@ type RosterBase struct {
 
 type RosterMetadata struct {
 	Player      string `json:"player"`
-	Name        string `json:"name"`
 	WhenCreated string `json:"whenCreated"`
 }
 

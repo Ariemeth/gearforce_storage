@@ -135,7 +135,7 @@ func (gearForceService) Hello(s string) (string, error) {
 
 // SaveRoster implements GearForceService.
 func (g *gearForceService) SaveRoster(r models.Roster) (uuid.UUID, error) {
-	key, _ := generateID(r)
+	key, _ := generateRosterID(r)
 
 	sr := r.ToRosterStorage(key.String())
 
@@ -181,7 +181,7 @@ func (g *gearForceService) GetRoster(id uuid.UUID) (models.Roster, error) {
 	return models.Roster{RosterBase: result.RosterBase}, nil
 }
 
-func generateID(r models.Roster) (uuid.UUID, error) {
+func generateRosterID(r models.Roster) (uuid.UUID, error) {
 	u, err := json.Marshal(r.RosterBase)
 	if err != nil {
 		return uuid.New(), err
