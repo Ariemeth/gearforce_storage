@@ -6,7 +6,7 @@
 
 ################################################################################
 # Create a stage for building the application.
-ARG GO_VERSION=1.21.2
+ARG GO_VERSION=1.22.0
 FROM golang:${GO_VERSION} AS build
 WORKDIR /src
 
@@ -32,16 +32,16 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 # runtime dependencies for the application. This often uses a different base
 # image from the build stage where the necessary files are copied from the build
 # stage.
-FROM alpine:3.18.4 AS final
+FROM alpine:3.19.1 AS final
 
 # Install any runtime dependencies that are needed to run your application.
 # Leverage a cache mount to /var/cache/apk/ to speed up subsequent builds.
 RUN --mount=type=cache,target=/var/cache/apk \
     apk --update add \
-        ca-certificates \
-        tzdata \
-        && \
-        update-ca-certificates
+    ca-certificates \
+    tzdata \
+    && \
+    update-ca-certificates
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
