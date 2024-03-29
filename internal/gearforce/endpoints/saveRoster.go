@@ -3,6 +3,7 @@ package endpoints
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/Ariemeth/gearforce_storage/internal/gearforce/errors"
@@ -28,6 +29,7 @@ func makeSaveRosterEndpoint(svc service.SaveRoster) endpoint.Endpoint {
 		req := request.(saveRosterRequest)
 		v, err := svc.SaveRoster(req.Roster)
 		if err != nil {
+			log.Println("Error saving roster: ", err)
 			return saveRosterResponse{"", err}, nil
 		}
 		return saveRosterResponse{v.String(), nil}, nil
@@ -37,6 +39,7 @@ func makeSaveRosterEndpoint(svc service.SaveRoster) endpoint.Endpoint {
 func decodeSaveRosterRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request saveRosterRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		log.Println("Error decoding save roster request: ", err)
 		return nil, errors.NewEndpointError(errors.ErrBadRosterFormat, ErrorStatusCode(errors.ErrBadRosterFormat))
 	}
 	return request, nil

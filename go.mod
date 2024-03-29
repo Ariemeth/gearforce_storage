@@ -1,6 +1,6 @@
 module github.com/Ariemeth/gearforce_storage
 
-go 1.21.1
+go 1.22.0
 
 require (
 	github.com/arangodb/go-driver v1.6.1
