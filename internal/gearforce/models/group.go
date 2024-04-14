@@ -25,9 +25,7 @@ func (g *Group) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		switch version.Version {
-		case 0:
-			fallthrough
-		case 1:
+		case 0, 1:
 			var unitV1 UnitV1
 			if err := json.Unmarshal(unitData, &unitV1); err != nil {
 				return err
