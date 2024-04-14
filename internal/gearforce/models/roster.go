@@ -1,49 +1,56 @@
 package models
 
-type RosterBase struct {
-	Name       string `json:"name"`
-	Faction    string `json:"faction"`
-	Subfaction struct {
-		Name         string `json:"name"`
-		EnabledRules []struct {
-			ID      string   `json:"id"`
-			Options []string `json:"options"`
-		} `json:"enabledRules"`
-	} `json:"subfaction"`
-	ForceLeader struct {
-		Cg       *string `json:"cg"`
-		Group    *string `json:"group"`
-		Unit     *string `json:"unit"`
-		Position *int    `json:"position"`
-	} `json:"forceLeader"`
-	TotalCreated int `json:"totalCreated"`
-	Cgs          []struct {
-		Primary        Group    `json:"primary"`
-		Secondary      Group    `json:"secondary"`
-		Name           string   `json:"name"`
-		IsVet          bool     `json:"isVet"`
-		EnabledOptions []string `json:"enabledOptions"`
-	} `json:"cgs"`
-	Version      int    `json:"version"`
-	RulesVersion string `json:"rulesVersion"`
-	IsEliteForce bool   `json:"isEliteForce"`
+type Roster interface{}
+
+type RosterV2 struct {
+	Name         string        `json:"name"`
+	Faction      string        `json:"faction"`
+	Subfaction   FactionRules  `json:"subfaction"`
+	ForceLeader  ForceLeader   `json:"forceLeader"`
+	TotalCreated int           `json:"totalCreated"`
+	Cgs          []CombatGroup `json:"cgs"`
+	Version      int           `json:"version"`
+	RulesVersion string        `json:"rulesVersion"`
+	IsEliteForce bool          `json:"isEliteForce"`
+	Player       string        `json:"player"`
+	WhenCreated  string        `json:"whenCreated"`
 }
 
-type RosterMetadata struct {
-	Player      string `json:"player"`
-	WhenCreated string `json:"whenCreated"`
+type RosterV3 struct {
+	Name         string        `json:"name"`
+	Faction      FactionRules  `json:"faction"`
+	Subfaction   FactionRules  `json:"subfaction"`
+	ForceLeader  ForceLeader   `json:"forceLeader"`
+	TotalCreated int           `json:"totalCreated"`
+	Cgs          []CombatGroup `json:"cgs"`
+	Version      int           `json:"version"`
+	RulesVersion string        `json:"rulesVersion"`
+	IsEliteForce bool          `json:"isEliteForce"`
+	Player       string        `json:"player"`
+	WhenCreated  string        `json:"whenCreated"`
 }
 
-type Roster struct {
-	RosterBase
-	RosterMetadata
+type CombatGroup struct {
+	Primary        Group    `json:"primary"`
+	Secondary      Group    `json:"secondary"`
+	Name           string   `json:"name"`
+	IsVet          bool     `json:"isVet"`
+	EnabledOptions []string `json:"enabledOptions"`
 }
 
-func (r Roster) ToRosterStorage(key string) RosterStorage {
-	return RosterStorage{RosterBase: r.RosterBase, Key: key}
+type FactionRules struct {
+	Name         string        `json:"name"`
+	EnabledRules []FactionRule `json:"enabledRules"`
 }
 
-type RosterStorage struct {
-	Key string `json:"_key"`
-	RosterBase
+type FactionRule struct {
+	ID      string   `json:"id"`
+	Options []string `json:"options"`
+}
+
+type ForceLeader struct {
+	Cg       *string `json:"cg"`
+	Group    *string `json:"group"`
+	Unit     *string `json:"unit"`
+	Position *int    `json:"position"`
 }

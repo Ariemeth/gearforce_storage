@@ -49,6 +49,40 @@ type saveRosterRequest struct {
 	Roster models.Roster `json:"roster"`
 }
 
+func (r *saveRosterRequest) UnmarshalJSON(data []byte) error {
+	type Alias saveRosterRequest
+	aux := &struct {
+		Roster json.RawMessage `json:"roster"`
+		*Alias
+	}{
+		Alias: (*Alias)(r),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	var version models.ModelVersion
+	if err := json.Unmarshal(aux.Roster, &version); err != nil {
+		return err
+	}
+
+	switch version.Version {
+	case 0, 1, 2:
+		var roster models.RosterV2
+		if err := json.Unmarshal(aux.Roster, &roster); err != nil {
+			return err
+		}
+		r.Roster = roster
+	default:
+		var roster models.RosterV3
+		if err := json.Unmarshal(aux.Roster, &roster); err != nil {
+			return err
+		}
+		r.Roster = roster
+	}
+
+	return nil
+}
+
 type saveRosterResponse struct {
 	Id  string `json:"id"`
 	Err error  `json:"err,omitempty"`

@@ -137,8 +137,6 @@ func (gearForceService) Hello(s string) (string, error) {
 func (g *gearForceService) SaveRoster(r models.Roster) (uuid.UUID, error) {
 	key, _ := generateRosterID(r)
 
-	sr := r.ToRosterStorage(key.String())
-
 	exists, err := g.Collection.DocumentExists(context.Background(), key.String())
 	if err != nil {
 		log.Printf("Error checking of roster id %s already exists: %v", key.String(), err)
@@ -148,7 +146,17 @@ func (g *gearForceService) SaveRoster(r models.Roster) (uuid.UUID, error) {
 		return key, nil
 	}
 
-	meta, err := g.Collection.CreateDocument(context.Background(), sr)
+	var meta driver.DocumentMeta
+
+	switch roster := r.(type) {
+	case models.RosterV2:
+		meta, err = g.saveRosterV2(key, roster)
+	case models.RosterV3:
+		meta, err = g.saveRosterV3(key, roster)
+	default:
+		return uuid.Nil, errors.ErrInvalidRosterType
+	}
+
 	if err != nil {
 		log.Printf("Error creating doc in database: %v", err)
 		return uuid.Nil, errors.ErrCannotCreateEntry
@@ -159,30 +167,77 @@ func (g *gearForceService) SaveRoster(r models.Roster) (uuid.UUID, error) {
 	return key, nil
 }
 
+func (g *gearForceService) saveRosterV2(key uuid.UUID, r models.RosterV2) (driver.DocumentMeta, error) {
+	rosterStore := struct {
+		Key string `json:"_key"`
+		models.RosterV2
+	}{
+		RosterV2: r,
+		Key:      key.String(),
+	}
+
+	meta, err := g.Collection.CreateDocument(context.Background(), rosterStore)
+
+	return meta, err
+}
+
+func (g *gearForceService) saveRosterV3(key uuid.UUID, r models.RosterV3) (driver.DocumentMeta, error) {
+	rosterStore := struct {
+		Key string `json:"_key"`
+		models.RosterV3
+	}{
+		RosterV3: r,
+		Key:      key.String(),
+	}
+
+	meta, err := g.Collection.CreateDocument(context.Background(), rosterStore)
+
+	return meta, err
+}
+
 // GetRoster implements GearForceService.
 func (g *gearForceService) GetRoster(id uuid.UUID) (models.Roster, error) {
 	exists, err := g.Collection.DocumentExists(context.Background(), id.String())
 	if err != nil {
 		log.Printf("Error getting roster %s from database: %v", id.String(), err)
-		return models.Roster{}, errors.ErrFromDatabase
+		return nil, errors.ErrFromDatabase
 	}
 
 	if !exists {
-		return models.Roster{}, errors.ErrIdNotFound
+		return nil, errors.ErrIdNotFound
 	}
 
-	var result models.RosterStorage
-	_, err = g.Collection.ReadDocument(context.Background(), id.String(), &result)
+	var version models.RosterVersion
+
+	meta, err := g.Collection.ReadDocument(context.Background(), id.String(), &version)
 	if err != nil {
 		log.Printf("Error getting roster %s from database: %v", id.String(), err)
-		return models.Roster{}, errors.ErrFromDatabase
+		return nil, errors.ErrFromDatabase
 	}
+	log.Println(meta)
 
-	return models.Roster{RosterBase: result.RosterBase}, nil
+	switch version.Version {
+	case 0, 1, 2:
+		var result models.RosterV2
+		_, err = g.Collection.ReadDocument(context.Background(), id.String(), &result)
+		if err != nil {
+			log.Printf("Error getting roster %s from database: %v", id.String(), err)
+			return nil, errors.ErrFromDatabase
+		}
+		return result, nil
+	default:
+		var result models.RosterV3
+		_, err = g.Collection.ReadDocument(context.Background(), id.String(), &result)
+		if err != nil {
+			log.Printf("Error getting roster %s from database: %v", id.String(), err)
+			return nil, errors.ErrFromDatabase
+		}
+		return result, nil
+	}
 }
 
 func generateRosterID(r models.Roster) (uuid.UUID, error) {
-	u, err := json.Marshal(r.RosterBase)
+	u, err := json.Marshal(r)
 	if err != nil {
 		return uuid.New(), err
 	}
