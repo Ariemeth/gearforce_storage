@@ -17,17 +17,18 @@ type RosterV2 struct {
 }
 
 type RosterV3 struct {
-	Name         string        `json:"name"`
-	Faction      FactionRules  `json:"faction"`
-	Subfaction   FactionRules  `json:"subfaction"`
-	ForceLeader  ForceLeader   `json:"forceLeader"`
-	TotalCreated int           `json:"totalCreated"`
-	Cgs          []CombatGroup `json:"cgs"`
-	Version      int           `json:"version"`
-	RulesVersion string        `json:"rulesVersion"`
-	IsEliteForce bool          `json:"isEliteForce"`
-	Player       string        `json:"player"`
-	WhenCreated  string        `json:"whenCreated"`
+	Name         string          `json:"name"`
+	Faction      FactionRules    `json:"faction"`
+	Subfaction   FactionRules    `json:"subfaction"`
+	ForceLeader  ForceLeader     `json:"forceLeader"`
+	TotalCreated int             `json:"totalCreated"`
+	Cgs          []CombatGroup   `json:"cgs"`
+	Version      int             `json:"version"`
+	RulesVersion string          `json:"rulesVersion"`
+	RuleOptions  map[string]bool `json:"ruleOptions"`
+	IsEliteForce bool            `json:"isEliteForce"`
+	Player       string          `json:"player"`
+	WhenCreated  string          `json:"whenCreated"`
 }
 
 type CombatGroup struct {
